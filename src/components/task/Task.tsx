@@ -1,10 +1,12 @@
 import './Task.scss'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { Edit, Trash } from '../../assets/icons'
+import { Edit, Trash, DragHandle } from '../../assets/icons'
 import { AppDispatch } from '../../store/store'
 import { removeTask, updateTaskName } from '../../store/slices/boardSlice'
 import { TaskInterface } from '../../store/types'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 export const Task: React.FC<TaskInterface> = ({ id, title }) => {
 	const [isHovered, setIsHovered] = useState<boolean>(false)
@@ -12,6 +14,20 @@ export const Task: React.FC<TaskInterface> = ({ id, title }) => {
 	const [localTaskTitle, setLocalTaskTitle] = useState<string>(title)
 
 	const dispatch = useDispatch<AppDispatch>()
+
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		setActivatorNodeRef,
+	} = useSortable({ id })
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	}
 
 	const handleRemoveTask = (id: string) => {
 		dispatch(removeTask(id))
@@ -29,10 +45,23 @@ export const Task: React.FC<TaskInterface> = ({ id, title }) => {
 
 	return (
 		<li
+			ref={setNodeRef}
+			style={style}
 			className="task"
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
+			{isHovered && (
+				<button
+					className="button-reset dnd"
+					ref={setActivatorNodeRef}
+					{...listeners}
+					{...attributes}
+				>
+					<DragHandle />
+				</button>
+			)}
+
 			{!isEditMode ? (
 				<span>{title}</span>
 			) : (
@@ -58,7 +87,7 @@ export const Task: React.FC<TaskInterface> = ({ id, title }) => {
 						<>
 							<button
 								className="button-reset icon-checkmark"
-								onClick={(e) => handleEditTask(id, localTaskTitle)}
+								onClick={() => handleEditTask(id, localTaskTitle)}
 							/>
 							<button
 								className="button-reset icon-close"

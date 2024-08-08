@@ -44,11 +44,14 @@ export const boardSlice = createSlice({
 				task.title = title
 			}
 		},
+    updateTasks(state, action: PayloadAction<TaskInterface[]>) {
+      state.tasks = action.payload;
+    },
 	},
 })
 
 const { actions, reducer } = boardSlice
 
-export const { addTask, removeTask, updateTaskName } = actions
+export const { addTask, removeTask, updateTaskName, updateTasks  } = actions
 
 export default reducer
