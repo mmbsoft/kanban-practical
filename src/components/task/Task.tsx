@@ -70,16 +70,14 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 				onMouseEnter={() => setIsHovered(true)}
 				onMouseLeave={() => setIsHovered(false)}
 			>
-				{isHovered && (
-					<button
-						className="button-reset dnd"
-						ref={setActivatorNodeRef}
-						{...listeners}
-						{...attributes}
-					>
-						<DragHandle />
-					</button>
-				)}
+				<button
+					className={`button-reset dnd toggle-element ${isHovered ? 'show' : ''}`}
+					ref={setActivatorNodeRef}
+					{...listeners}
+					{...attributes}
+				>
+					<DragHandle />
+				</button>
 
 				{!isEditMode ? (
 					<span>{title}</span>
@@ -131,6 +129,7 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 					</div>
 				)}
 			</li>
+
 			<ul className="subtasks">
 				{subtasks &&
 					subtasks.map((subtask) => (

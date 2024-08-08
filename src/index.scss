@@ -34,6 +34,14 @@ a {
 	}
 }
 
+body,
+a,
+button {
+	@media (max-width: 768px) {
+		font-size: 12px;
+	}
+}
+
 ul,
 li {
 	list-style: none;

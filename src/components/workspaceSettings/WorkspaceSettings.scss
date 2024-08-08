@@ -9,6 +9,15 @@
 	transition: opacity 0.3s ease-in-out;
 	padding: 0;
 
+	svg {
+		color: #b7bec5;
+		transition: color 0.3s ease;
+
+		&:hover {
+			color: #007dfc;
+		}
+	}
+
 	&:hover {
 		opacity: 0.8;
 	}

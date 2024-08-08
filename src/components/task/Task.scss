@@ -12,6 +12,13 @@
 	margin-bottom: 8px;
 	position: relative;
 
+	@media (max-width: 768px) {
+		min-height: 45px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		line-height: 14px;
+	}
+
 	> span {
 		flex-basis: 100%;
 	}
@@ -21,6 +28,11 @@
 		display: flex;
 		gap: 12px;
 		position: relative;
+
+		@media (max-width: 768px) {
+			gap: 10px;
+			margin-left: 10px;
+		}
 	}
 
 	&-input {
@@ -35,13 +47,14 @@
 		margin: 0;
 		box-shadow: none;
 		height: 30px;
-		flex-basis: calc(100% - 64px);
+		width: 100%;
 	}
 
 	.dnd {
 		position: absolute;
 		cursor: move;
 		left: 5px;
+		line-height: 0;
 
 		svg {
 			color: #989ea4;

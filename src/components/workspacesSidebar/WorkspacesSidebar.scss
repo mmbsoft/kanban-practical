@@ -10,9 +10,17 @@
 	display: flex;
 	flex-direction: column;
 
+	@media (max-width: 768px) {
+		max-width: 56px;
+		border-radius: 10px;
+	}
+
 	&-sidebar {
-		padding: 8px;
 		flex-grow: 1;
+
+		@media (min-width: 769px) {
+			padding: 8px;
+		}
 	}
 
 	&-footer {
@@ -20,6 +28,12 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 24px;
+
+		@media (max-width: 768px) {
+			flex-direction: column-reverse;
+			gap: 15px;
+			padding: 15px;
+		}
 	}
 }
 
@@ -35,17 +49,32 @@
 		a {
 			display: flex;
 			align-items: center;
+
+			&:hover {
+				svg {
+					color: #007dfc;
+				}
+			}
 		}
 
 		span {
 			display: inline-block;
 			margin-left: 16px;
+
+			@media (max-width: 768px) {
+				display: none;
+			}
 		}
 	}
 
 	&-active {
-		a {
+		a,
+		svg {
 			color: #007dfc;
+		}
+
+		a {
+			font-weight: 600;
 		}
 	}
 }
