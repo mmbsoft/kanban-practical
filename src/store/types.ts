@@ -1,7 +1,8 @@
 export interface TaskInterface {
-	length?: number
 	id: string
 	title: string
+	subtasks?: TaskInterface[]
+	length?: number
 }
 
 export interface BoardInterface {

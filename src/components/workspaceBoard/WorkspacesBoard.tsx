@@ -51,7 +51,11 @@ export const WorkspacesBoard: React.FC = () => {
 
 								return (
 									<React.Fragment key={task.id}>
-										<Task id={task.id} title={task.title} />
+										<Task
+											id={task.id}
+											title={task.title}
+											subtasks={task.subtasks}
+										/>
 										{isLast && <AddNewTask onClick={handleAddTask} />}
 									</React.Fragment>
 								)

@@ -9,6 +9,16 @@ const initialState: BoardInterface | Record<string, never> = {
 		{
 			id: generateTaskId(),
 			title: 'Social Media posts for Acme',
+			subtasks: [
+				{
+					id: generateTaskId(),
+					title: 'Create content',
+				},
+				{
+					id: generateTaskId(),
+					title: 'Schedule posts',
+				},
+			],
 		},
 		{
 			id: generateTaskId(),
@@ -30,7 +40,7 @@ export const boardSlice = createSlice({
 	initialState,
 	reducers: {
 		addTask(state) {
-			const newTask = { id: generateTaskId(), title: 'New Task' }
+			const newTask = { id: generateTaskId(), title: 'New Task', subtasks: [] }
 			state.tasks.push(newTask)
 		},
 		removeTask(state, action: PayloadAction<string>) {
@@ -44,14 +54,24 @@ export const boardSlice = createSlice({
 				task.title = title
 			}
 		},
-    updateTasks(state, action: PayloadAction<TaskInterface[]>) {
-      state.tasks = action.payload;
-    },
+		updateTasks(state, action: PayloadAction<TaskInterface[]>) {
+			state.tasks = action.payload
+		},
+		addSubtask(state, action) {
+			const { parentId, subtask } = action.payload
+			const parentTask = state.tasks.find((task) => task.id === parentId)
+
+			if (parentTask) {
+				parentTask.subtasks = parentTask.subtasks || []
+				parentTask.subtasks.push(subtask)
+			}
+		},
 	},
 })
 
 const { actions, reducer } = boardSlice
 
-export const { addTask, removeTask, updateTaskName, updateTasks  } = actions
+export const { addTask, removeTask, updateTaskName, updateTasks, addSubtask } =
+	actions
 
 export default reducer
