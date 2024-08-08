@@ -1,7 +1,7 @@
-import User from './user.png';
+import User from './user.png'
 
 const Images = {
-    User,
+	User,
 }
 
-export default Images;
+export default Images

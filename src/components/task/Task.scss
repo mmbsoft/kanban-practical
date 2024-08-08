@@ -1,0 +1,39 @@
+.task {
+	background: #fff;
+	border-radius: 6px;
+	min-height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 16px 0 33px;
+	font-weight: 400;
+	box-shadow: 0px 0px 1px 0px #12033e1a;
+	box-shadow: 0px 1px 1px 0px #12033e1a;
+	margin-bottom: 8px;
+
+	> span {
+		flex-basis: 100%;
+	}
+
+	&-actions {
+		margin-left: 20px;
+		display: flex;
+		gap: 12px;
+		position: relative;
+	}
+
+	&-input {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		border: none;
+		border-bottom: 1px solid #007dfc;
+		background: none;
+		outline: none;
+		padding: 0;
+		margin: 0;
+		box-shadow: none;
+		height: 30px;
+		flex-basis: calc(100% - 64px);
+	}
+}

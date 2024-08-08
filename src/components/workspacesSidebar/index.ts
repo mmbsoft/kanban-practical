@@ -1,1 +1,1 @@
-export * from './WorkspacesSidebar';
+export * from './WorkspacesSidebar'

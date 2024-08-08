@@ -1,14 +1,15 @@
 .workspace-settings {
-    border: none;
-    background-color: transparent;
-    outline: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: opacity .3s ease-in-out;
-    padding: 0;
-    &:hover {
-        opacity: .8;
-    }
+	border: none;
+	background-color: transparent;
+	outline: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: opacity 0.3s ease-in-out;
+	padding: 0;
+
+	&:hover {
+		opacity: 0.8;
+	}
 }
