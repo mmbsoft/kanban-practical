@@ -42,12 +42,12 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 		transition,
 	}
 
-	const handleRemoveTask = (id: string) => {
-		dispatch(removeTask(id))
+	const handleRemoveTask = () => {
+		dispatch(removeTask({ taskId: id }))
 	}
 
-	const handleEditTask = (id: string, newTitle: string) => {
-		dispatch(updateTaskName({ id, title: newTitle }))
+	const handleEditTask = () => {
+		dispatch(updateTaskName({ id, title: localTaskTitle }))
 		setIsEditMode(false)
 	}
 
@@ -68,18 +68,12 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 	const handleSubtaskDragEnd = (e: { active: any; over: any }) => {
 		const { active, over } = e
 
-		const currentSubtasks = subtasks || []
+		if (active && over && active.id !== over.id && subtasks) {
+			const oldIndex = subtasks.findIndex((sub) => sub.id === active.id)
+			const newIndex = subtasks.findIndex((sub) => sub.id === over.id)
+			const newSubtasks = arrayMove(subtasks, oldIndex, newIndex)
 
-		if (active && over && active.id !== over.id) {
-			const oldIndex = currentSubtasks.findIndex((sub) => sub.id === active.id)
-			const newIndex = currentSubtasks.findIndex((sub) => sub.id === over.id)
-
-			if (oldIndex !== -1 && newIndex !== -1) {
-				const newSubtasks = arrayMove(currentSubtasks, oldIndex, newIndex)
-				dispatch(updateSubtasks({ parentId: id, subtasks: newSubtasks }))
-			} else {
-				console.error('Subtask not found')
-			}
+			dispatch(updateSubtasks({ parentId: id, subtasks: newSubtasks }))
 		}
 	}
 
@@ -133,7 +127,7 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 							<>
 								<button
 									className="button-reset icon-checkmark"
-									onClick={() => handleEditTask(id, localTaskTitle)}
+									onClick={handleEditTask}
 								/>
 								<button
 									className="button-reset icon-close"
@@ -143,10 +137,7 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 						)}
 
 						{!isEditMode && (
-							<button
-								className="button-reset"
-								onClick={() => handleRemoveTask(id)}
-							>
+							<button className="button-reset" onClick={handleRemoveTask}>
 								<Trash />
 							</button>
 						)}

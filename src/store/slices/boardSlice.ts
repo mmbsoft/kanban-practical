@@ -46,15 +46,53 @@ export const boardSlice = createSlice({
 			const newTask = { id: generateTaskId(), title: 'New Task', subtasks: [] }
 			state.tasks.push(newTask)
 		},
-		removeTask(state, action: PayloadAction<string>) {
-			state.tasks = state.tasks.filter((task) => task.id !== action.payload)
-		},
-		updateTaskName: (state, action) => {
-			const { id, title } = action.payload
-			const task = state.tasks.find((task) => task.id === id)
+		removeTask(
+			state,
+			action: PayloadAction<{ parentId?: string; taskId: string }>,
+		) {
+			const removeTaskRecursively = (
+				tasks: TaskInterface[],
+				taskId: string,
+			): TaskInterface[] => {
+				return tasks.filter((task) => {
+					if (task.id === taskId) {
+						return false
+					}
+					task.subtasks = task.subtasks
+						? removeTaskRecursively(task.subtasks, taskId)
+						: []
+					return true
+				})
+			}
 
-			if (task) {
-				task.title = title
+			state.tasks = removeTaskRecursively(state.tasks, action.payload.taskId)
+		},
+		updateTaskName(
+			state,
+			action: PayloadAction<{ id: string; title: string }>,
+		) {
+			const updateTaskNameRecursively = (
+				tasks: TaskInterface[],
+				taskId: string,
+				newTitle: string,
+			) => {
+				for (let task of tasks) {
+					if (task.id === taskId) {
+						task.title = newTitle
+						return
+					}
+					if (task.subtasks) {
+						updateTaskNameRecursively(task.subtasks, taskId, newTitle)
+					}
+				}
+			}
+
+			if (state.tasks) {
+				updateTaskNameRecursively(
+					state.tasks,
+					action.payload.id,
+					action.payload.title,
+				)
 			}
 		},
 		updateTasks(state, action: PayloadAction<TaskInterface[]>) {
@@ -65,35 +103,58 @@ export const boardSlice = createSlice({
 			action: PayloadAction<{ parentId: string; subtask: TaskInterface }>,
 		) {
 			const addSubtaskRecursively = (
-				tasks: TaskInterface[] | undefined,
+				tasks: TaskInterface[],
 				parentId: string,
 				subtask: TaskInterface,
 			) => {
-				if (!tasks) return false
-
 				for (let task of tasks) {
 					if (task.id === parentId) {
-						task.subtasks?.push(subtask)
+						if (!task.subtasks) {
+							task.subtasks = [] // Initialize subtasks if undefined
+						}
+						task.subtasks.push(subtask)
 						return
 					}
-					addSubtaskRecursively(task.subtasks, parentId, subtask)
+					if (task.subtasks) {
+						addSubtaskRecursively(task.subtasks, parentId, subtask)
+					}
 				}
 			}
-			addSubtaskRecursively(
-				state.tasks,
-				action.payload.parentId,
-				action.payload.subtask,
-			)
+
+			if (state.tasks) {
+				addSubtaskRecursively(
+					state.tasks,
+					action.payload.parentId,
+					action.payload.subtask,
+				)
+			}
 		},
 		updateSubtasks(
 			state,
 			action: PayloadAction<{ parentId: string; subtasks: TaskInterface[] }>,
 		) {
-			const { parentId, subtasks } = action.payload
-			const parentTask = state.tasks.find((task) => task.id === parentId)
+			const updateSubtasksRecursively = (
+				tasks: TaskInterface[],
+				parentId: string,
+				newSubtasks: TaskInterface[],
+			) => {
+				for (let task of tasks) {
+					if (task.id === parentId) {
+						task.subtasks = newSubtasks
+						return
+					}
+					if (task.subtasks) {
+						updateSubtasksRecursively(task.subtasks, parentId, newSubtasks)
+					}
+				}
+			}
 
-			if (parentTask) {
-				parentTask.subtasks = subtasks
+			if (state.tasks) {
+				updateSubtasksRecursively(
+					state.tasks,
+					action.payload.parentId,
+					action.payload.subtasks,
+				)
 			}
 		},
 	},

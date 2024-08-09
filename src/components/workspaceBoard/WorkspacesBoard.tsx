@@ -22,11 +22,9 @@ export const WorkspacesBoard: React.FC = () => {
 
 	const handleDragEnd = (event: { active: any; over: any }) => {
 		const { active, over } = event
-
 		if (active && over && active.id !== over.id) {
 			const oldIndex = tasks.findIndex((task) => task.id === active.id)
 			const newIndex = tasks.findIndex((task) => task.id === over.id)
-
 			const newTasks = arrayMove(tasks, oldIndex, newIndex)
 			dispatch(updateTasks(newTasks))
 		}
