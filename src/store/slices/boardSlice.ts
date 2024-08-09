@@ -23,14 +23,17 @@ const initialState: BoardInterface | Record<string, never> = {
 		{
 			id: generateTaskId(),
 			title: 'Social Media posts for Acme',
+			subtasks: [],
 		},
 		{
 			id: generateTaskId(),
 			title: 'Facebook Campaign',
+			subtasks: [],
 		},
 		{
 			id: generateTaskId(),
 			title: 'TikTok Profile Setup',
+			subtasks: [],
 		},
 	],
 }

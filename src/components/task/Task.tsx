@@ -12,12 +12,12 @@ import {
 import { TaskInterface } from '../../store/types'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { AddNewTask } from '../addNewTask/AddNewTask'
 
 export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 	const [isHovered, setIsHovered] = useState<boolean>(false)
 	const [isEditMode, setIsEditMode] = useState<boolean>(false)
 	const [localTaskTitle, setLocalTaskTitle] = useState<string>(title)
-	const [newSubtaskTitle, setNewSubtaskTitle] = useState<string>('New Subtask')
 
 	const dispatch = useDispatch<AppDispatch>()
 
@@ -50,15 +50,12 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 	}
 
 	const handleAddSubtask = () => {
-		if (newSubtaskTitle.trim()) {
-			dispatch(
-				addSubtask({
-					parentId: id,
-					subtask: { id: generateTaskId(), title: newSubtaskTitle },
-				}),
-			)
-			setNewSubtaskTitle('')
-		}
+		dispatch(
+			addSubtask({
+				parentId: id,
+				subtask: { id: generateTaskId(), title: 'Subtask' },
+			}),
+		)
 	}
 
 	return (
@@ -95,9 +92,11 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 					<div className="task-actions">
 						{!isEditMode ? (
 							<>
-								<button className="button-reset" onClick={handleAddSubtask}>
-									<NewSubtask />
-								</button>
+								{subtasks?.length === 0 && (
+									<button className="button-reset" onClick={handleAddSubtask}>
+										<NewSubtask />
+									</button>
+								)}
 								<button
 									className="button-reset"
 									onClick={() => setIsEditMode(!isEditMode)}
@@ -132,14 +131,20 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 
 			<ul className="subtasks">
 				{subtasks &&
-					subtasks.map((subtask) => (
-						<Task
-							key={subtask.id}
-							id={subtask.id}
-							title={subtask.title}
-							subtasks={subtask.subtasks}
-						/>
-					))}
+					subtasks.map((subtask, index) => {
+						const isLast = index === subtasks.length - 1
+
+						return (
+							<React.Fragment key={subtask.id}>
+								<Task
+									id={subtask.id}
+									title={subtask.title}
+									subtasks={subtask.subtasks}
+								/>
+								{isLast && <AddNewTask onClick={handleAddSubtask} />}
+							</React.Fragment>
+						)
+					})}
 			</ul>
 		</>
 	)
