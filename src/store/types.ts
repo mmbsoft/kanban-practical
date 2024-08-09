@@ -1,6 +1,7 @@
 export interface TaskInterface {
 	id: string
 	title: string
+	completed: boolean
 	subtasks?: TaskInterface[]
 	length?: number
 }

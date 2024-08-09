@@ -1,7 +1,14 @@
 import './Task.scss'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { Edit, Trash, DragHandle, NewSubtask } from '../../assets/icons'
+import {
+	Edit,
+	Trash,
+	DragHandle,
+	NewSubtask,
+	Checkmark,
+	Reverse,
+} from '../../assets/icons'
 import { AppDispatch } from '../../store/store'
 import {
 	removeTask,
@@ -9,6 +16,7 @@ import {
 	addSubtask,
 	generateTaskId,
 	updateSubtasks,
+	markTaskCompleted,
 } from '../../store/slices/boardSlice'
 import { TaskInterface } from '../../store/types'
 import { AddNewTask } from '../addNewTask/AddNewTask'
@@ -21,10 +29,16 @@ import {
 } from '@dnd-kit/sortable'
 import { DndContext } from '@dnd-kit/core'
 
-export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
+export const Task: React.FC<TaskInterface> = ({
+	id,
+	title,
+	subtasks,
+	completed,
+}) => {
 	const [isHovered, setIsHovered] = useState<boolean>(false)
 	const [isEditMode, setIsEditMode] = useState<boolean>(false)
 	const [localTaskTitle, setLocalTaskTitle] = useState<string>(title)
+	const [isRemoving, setIsRemoving] = useState<boolean>(false)
 
 	const dispatch = useDispatch<AppDispatch>()
 
@@ -33,21 +47,28 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 		listeners,
 		setNodeRef,
 		transform,
-		transition,
+		transition: sortableTransition,
 		setActivatorNodeRef,
 	} = useSortable({ id })
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
-		transition,
+		opacity: isRemoving ? 0 : 1,
+		maxHeight: isRemoving ? 0 : '100%',
+		overflow: 'hidden',
+		transition: `${sortableTransition}, opacity 0.3s ease, max-height 0.3s ease, background-color 0.3s ease`,
+		backgroundColor: completed ? '#d3f9d8' : '#fff',
 	}
 
-	const handleRemoveTask = () => {
-		dispatch(removeTask({ taskId: id }))
+	const handleRemoveTask = (taskId: string) => {
+		setIsRemoving(true)
+		setTimeout(() => {
+			dispatch(removeTask({ taskId }))
+		}, 300)
 	}
 
-	const handleEditTask = () => {
-		dispatch(updateTaskName({ id, title: localTaskTitle }))
+	const handleEditTask = (taskId: string, newTitle: string) => {
+		dispatch(updateTaskName({ id: taskId, title: newTitle }))
 		setIsEditMode(false)
 	}
 
@@ -60,7 +81,12 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 		dispatch(
 			addSubtask({
 				parentId: id,
-				subtask: { id: generateTaskId(), title: 'Subtask', subtasks: [] },
+				subtask: {
+					id: generateTaskId(),
+					title: 'Subtask',
+					subtasks: [],
+					completed: false,
+				},
 			}),
 		)
 	}
@@ -68,21 +94,32 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 	const handleSubtaskDragEnd = (e: { active: any; over: any }) => {
 		const { active, over } = e
 
-		if (active && over && active.id !== over.id && subtasks) {
-			const oldIndex = subtasks.findIndex((sub) => sub.id === active.id)
-			const newIndex = subtasks.findIndex((sub) => sub.id === over.id)
-			const newSubtasks = arrayMove(subtasks, oldIndex, newIndex)
+		const currentSubtasks = subtasks || []
 
-			dispatch(updateSubtasks({ parentId: id, subtasks: newSubtasks }))
+		if (active && over && active.id !== over.id) {
+			const oldIndex = currentSubtasks.findIndex((sub) => sub.id === active.id)
+			const newIndex = currentSubtasks.findIndex((sub) => sub.id === over.id)
+
+			if (oldIndex !== -1 && newIndex !== -1) {
+				const newSubtasks = arrayMove(currentSubtasks, oldIndex, newIndex)
+
+				dispatch(updateSubtasks({ parentId: id, subtasks: newSubtasks }))
+			} else {
+				console.error('Subtask not found')
+			}
 		}
+	}
+
+	const handleCompleteTask = (taskId: string) => {
+		dispatch(markTaskCompleted({ taskId }))
 	}
 
 	return (
 		<>
-			<li
+			<div
 				ref={setNodeRef}
 				style={style}
-				className="task"
+				className={`task ${isRemoving ? 'removing' : ''}`}
 				onMouseEnter={() => setIsHovered(true)}
 				onMouseLeave={() => setIsHovered(false)}
 			>
@@ -111,24 +148,46 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 					<div className="task-actions">
 						{!isEditMode ? (
 							<>
-								{subtasks?.length === 0 && (
-									<button className="button-reset" onClick={handleAddSubtask}>
-										<NewSubtask />
+								{!completed && (
+									<button
+										className="button-reset"
+										onClick={() => handleCompleteTask(id)}
+									>
+										<Checkmark />
 									</button>
 								)}
-								<button
-									className="button-reset"
-									onClick={() => setIsEditMode(!isEditMode)}
-								>
-									<Edit />
-								</button>
+								{subtasks?.length === 0 && !completed && (
+									<>
+										<button className="button-reset" onClick={handleAddSubtask}>
+											<NewSubtask />
+										</button>
+									</>
+								)}
+
+								{!completed ? (
+									<button
+										className="button-reset"
+										onClick={() => setIsEditMode(!isEditMode)}
+									>
+										<Edit />
+									</button>
+								) : (
+									<button
+										className="button-reset"
+										onClick={() => handleCompleteTask(id)}
+									>
+										<Reverse />
+									</button>
+								)}
 							</>
 						) : (
 							<>
 								<button
-									className="button-reset icon-checkmark"
-									onClick={handleEditTask}
-								/>
+									className="button-reset"
+									onClick={() => handleEditTask(id, localTaskTitle)}
+								>
+									<Checkmark />
+								</button>
 								<button
 									className="button-reset icon-close"
 									onClick={handleRejectEditTask}
@@ -137,13 +196,16 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 						)}
 
 						{!isEditMode && (
-							<button className="button-reset" onClick={handleRemoveTask}>
+							<button
+								className="button-reset"
+								onClick={() => handleRemoveTask(id)}
+							>
 								<Trash />
 							</button>
 						)}
 					</div>
 				)}
-			</li>
+			</div>
 
 			{subtasks && subtasks.length > 0 && (
 				<DndContext onDragEnd={handleSubtaskDragEnd}>
@@ -151,20 +213,21 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 						items={subtasks.map((sub) => sub.id)}
 						strategy={rectSortingStrategy}
 					>
-						<ul className="subtasks">
+						<div className="subtasks">
 							{subtasks.map((subtask, index) => (
 								<React.Fragment key={subtask.id}>
 									<Task
 										id={subtask.id}
 										title={subtask.title}
 										subtasks={subtask.subtasks}
+										completed={subtask.completed}
 									/>
-									{index === subtasks.length - 1 && (
+									{index === subtasks.length - 1 && !completed && (
 										<AddNewTask onClick={handleAddSubtask} />
 									)}
 								</React.Fragment>
 							))}
-						</ul>
+						</div>
 					</SortableContext>
 				</DndContext>
 			)}

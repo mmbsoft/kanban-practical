@@ -20,12 +20,14 @@ export const WorkspacesBoard: React.FC = () => {
 		dispatch(addTask())
 	}
 
-	const handleDragEnd = (event: { active: any; over: any }) => {
-		const { active, over } = event
+	const handleDragEnd = (e: { active: any; over: any }) => {
+		const { active, over } = e
+
 		if (active && over && active.id !== over.id) {
 			const oldIndex = tasks.findIndex((task) => task.id === active.id)
 			const newIndex = tasks.findIndex((task) => task.id === over.id)
 			const newTasks = arrayMove(tasks, oldIndex, newIndex)
+
 			dispatch(updateTasks(newTasks))
 		}
 	}
@@ -43,20 +45,19 @@ export const WorkspacesBoard: React.FC = () => {
 						items={tasks.map((task) => task.id)}
 						strategy={rectSortingStrategy}
 					>
-						<ul>
-							{tasks.map((task, index) => (
-								<React.Fragment key={task.id}>
-									<Task
-										id={task.id}
-										title={task.title}
-										subtasks={task.subtasks}
-									/>
-									{index === tasks.length - 1 && (
-										<AddNewTask onClick={handleAddTask} />
-									)}
-								</React.Fragment>
-							))}
-						</ul>
+						{tasks.map((task, index) => (
+							<React.Fragment key={task.id}>
+								<Task
+									id={task.id}
+									title={task.title}
+									subtasks={task.subtasks}
+									completed={task.completed}
+								/>
+								{index === tasks.length - 1 && (
+									<AddNewTask onClick={handleAddTask} />
+								)}
+							</React.Fragment>
+						))}
 					</SortableContext>
 				</DndContext>
 			)}
