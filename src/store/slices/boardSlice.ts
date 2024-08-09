@@ -60,13 +60,40 @@ export const boardSlice = createSlice({
 		updateTasks(state, action: PayloadAction<TaskInterface[]>) {
 			state.tasks = action.payload
 		},
-		addSubtask(state, action) {
-			const { parentId, subtask } = action.payload
+		addSubtask(
+			state,
+			action: PayloadAction<{ parentId: string; subtask: TaskInterface }>,
+		) {
+			const addSubtaskRecursively = (
+				tasks: TaskInterface[] | undefined,
+				parentId: string,
+				subtask: TaskInterface,
+			) => {
+				if (!tasks) return false
+
+				for (let task of tasks) {
+					if (task.id === parentId) {
+						task.subtasks?.push(subtask)
+						return
+					}
+					addSubtaskRecursively(task.subtasks, parentId, subtask)
+				}
+			}
+			addSubtaskRecursively(
+				state.tasks,
+				action.payload.parentId,
+				action.payload.subtask,
+			)
+		},
+		updateSubtasks(
+			state,
+			action: PayloadAction<{ parentId: string; subtasks: TaskInterface[] }>,
+		) {
+			const { parentId, subtasks } = action.payload
 			const parentTask = state.tasks.find((task) => task.id === parentId)
 
 			if (parentTask) {
-				parentTask.subtasks = parentTask.subtasks || []
-				parentTask.subtasks.push(subtask)
+				parentTask.subtasks = subtasks
 			}
 		},
 	},
@@ -74,7 +101,13 @@ export const boardSlice = createSlice({
 
 const { actions, reducer } = boardSlice
 
-export const { addTask, removeTask, updateTaskName, updateTasks, addSubtask } =
-	actions
+export const {
+	addTask,
+	removeTask,
+	updateTaskName,
+	updateTasks,
+	addSubtask,
+	updateSubtasks,
+} = actions
 
 export default reducer

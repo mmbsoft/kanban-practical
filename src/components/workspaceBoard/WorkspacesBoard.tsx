@@ -46,20 +46,18 @@ export const WorkspacesBoard: React.FC = () => {
 						strategy={rectSortingStrategy}
 					>
 						<ul>
-							{tasks.map((task, index) => {
-								const isLast = index === tasks.length - 1
-
-								return (
-									<React.Fragment key={task.id}>
-										<Task
-											id={task.id}
-											title={task.title}
-											subtasks={task.subtasks}
-										/>
-										{isLast && <AddNewTask onClick={handleAddTask} />}
-									</React.Fragment>
-								)
-							})}
+							{tasks.map((task, index) => (
+								<React.Fragment key={task.id}>
+									<Task
+										id={task.id}
+										title={task.title}
+										subtasks={task.subtasks}
+									/>
+									{index === tasks.length - 1 && (
+										<AddNewTask onClick={handleAddTask} />
+									)}
+								</React.Fragment>
+							))}
 						</ul>
 					</SortableContext>
 				</DndContext>

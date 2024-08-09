@@ -8,11 +8,18 @@ import {
 	updateTaskName,
 	addSubtask,
 	generateTaskId,
+	updateSubtasks,
 } from '../../store/slices/boardSlice'
 import { TaskInterface } from '../../store/types'
+import { AddNewTask } from '../addNewTask/AddNewTask'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { AddNewTask } from '../addNewTask/AddNewTask'
+import {
+	SortableContext,
+	arrayMove,
+	rectSortingStrategy,
+} from '@dnd-kit/sortable'
+import { DndContext } from '@dnd-kit/core'
 
 export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 	const [isHovered, setIsHovered] = useState<boolean>(false)
@@ -53,9 +60,27 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 		dispatch(
 			addSubtask({
 				parentId: id,
-				subtask: { id: generateTaskId(), title: 'Subtask' },
+				subtask: { id: generateTaskId(), title: 'Subtask', subtasks: [] },
 			}),
 		)
+	}
+
+	const handleSubtaskDragEnd = (e: { active: any; over: any }) => {
+		const { active, over } = e
+
+		const currentSubtasks = subtasks || []
+
+		if (active && over && active.id !== over.id) {
+			const oldIndex = currentSubtasks.findIndex((sub) => sub.id === active.id)
+			const newIndex = currentSubtasks.findIndex((sub) => sub.id === over.id)
+
+			if (oldIndex !== -1 && newIndex !== -1) {
+				const newSubtasks = arrayMove(currentSubtasks, oldIndex, newIndex)
+				dispatch(updateSubtasks({ parentId: id, subtasks: newSubtasks }))
+			} else {
+				console.error('Subtask not found')
+			}
+		}
 	}
 
 	return (
@@ -129,23 +154,29 @@ export const Task: React.FC<TaskInterface> = ({ id, title, subtasks }) => {
 				)}
 			</li>
 
-			<ul className="subtasks">
-				{subtasks &&
-					subtasks.map((subtask, index) => {
-						const isLast = index === subtasks.length - 1
-
-						return (
-							<React.Fragment key={subtask.id}>
-								<Task
-									id={subtask.id}
-									title={subtask.title}
-									subtasks={subtask.subtasks}
-								/>
-								{isLast && <AddNewTask onClick={handleAddSubtask} />}
-							</React.Fragment>
-						)
-					})}
-			</ul>
+			{subtasks && subtasks.length > 0 && (
+				<DndContext onDragEnd={handleSubtaskDragEnd}>
+					<SortableContext
+						items={subtasks.map((sub) => sub.id)}
+						strategy={rectSortingStrategy}
+					>
+						<ul className="subtasks">
+							{subtasks.map((subtask, index) => (
+								<React.Fragment key={subtask.id}>
+									<Task
+										id={subtask.id}
+										title={subtask.title}
+										subtasks={subtask.subtasks}
+									/>
+									{index === subtasks.length - 1 && (
+										<AddNewTask onClick={handleAddSubtask} />
+									)}
+								</React.Fragment>
+							))}
+						</ul>
+					</SortableContext>
+				</DndContext>
+			)}
 		</>
 	)
 }
